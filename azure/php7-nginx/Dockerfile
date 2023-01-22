@@ -1,5 +1,6 @@
 # Includes:
 # - PHP 7.4 fpm (Docker entrypoint)
+#   - Listens on the Unix socket /run/php/php-fpm.sock
 #   - mcrypt
 #   - opcache
 #   - pdo_mysql
@@ -46,6 +47,14 @@ ENV PHP_OPCACHE_ENABLE="1"
 ENV PHP_OPCACHE_VALIDATE_TIMESTAMPS="0"
 
 ADD opcache.ini "$PHP_INI_DIR/conf.d/opcache.ini"
+
+# Use a socket for communication with Nginx.
+# The owner is www-data but the group is nginx so both PHP and Nginx have access.
+RUN mkdir -p /run/php/; \
+    { \
+        echo 'listen = /run/php/php-fpm.sock'; \
+        echo 'listen.group = nginx'; \
+    } >> "$PHP_INI_DIR/../php-fpm.d/zz-docker.conf"
 
 
 #########
